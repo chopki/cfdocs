@@ -2,6 +2,16 @@
 <cfset url.name = ReReplace(url.name, "[^a-zA-Z0-9_-]", "", "ALL")>
 <cfif url.name IS "index">
 	<cfset data = {name="CFDocs", description="Ultra Fast CFML Documentation", type="index"}>
+<cfelseif FileExists(ExpandPath("./guides/en/#url.name#.md"))>
+	<cftry>
+		<!--- convert md to HTML --->
+		<cfset data = application.txtmark.process(createObject("java", "java.io.File").init(ExpandPath("./guides/en/#url.name#.md")), "utf-8")>
+		<cfcatch>
+			<cfset data = "Error processing markdown: #encodeForHTML(cfcatch.message)# #encodeForHTML(cfcatch.detail)#">
+			<cfset data &= "Make sure you have installed the textMark jar file in the lib directory used to process the markup files.">
+			<cfset applicationStop()>
+		</cfcatch>
+	</cftry>
 <cfelseif FileExists(ExpandPath("./data/en/#url.name#.json"))>
 	<cfset data = DeserializeJSON( FileRead(ExpandPath("./data/en/#url.name#.json")))>
 <cfelse>
@@ -21,7 +31,12 @@
 	<cfset data = {name = url.name, description="Sorry we don't have any docs matching that name. If we should have a doc for this, please send us a pull request on github.", type="404", related=possible}>
 	<cfheader statuscode="404" statustext="Not Found">
 </cfif>
-<cfset request.title = data.name>
-
-
-<cfinclude template="views/doc.cfm">
+<cfif isStruct(data)>
+	<cfset request.title = data.name>
+	<cfif structKeyExists(data, "examples") AND arrayLen(data.examples) GT 0>
+		<cfset request.title = request.title & " Code Examples and">
+	</cfif>
+	<cfinclude template="views/doc.cfm">
+<cfelse>
+	<cfinclude template="views/markdown.cfm">
+</cfif>

@@ -26,6 +26,13 @@
                     <small><span class="glyphicon glyphicon-flash" title="#HTMLEditFormat(data.scriptTitle)#"></span></small> &nbsp;<code>#HTMLEditFormat(data.script)#</code>
                 </p>
             </cfif>
+        <cfelseif data.type is "function">
+        	 <cfif StructKeyExists(data, "member")>
+        	 	<h4><em>Member Function Syntax</em></h4>
+                <p id="member-syntax">
+                    <code>#HTMLEditFormat(data.member)#</code>
+                </p>
+            </cfif>
         </cfif>
 	</cfif>
     <cfif StructKeyExists(data, "discouraged") AND Len(data.discouraged)>
@@ -78,7 +85,7 @@
 		</cfif>
 	</cfif>
 	<cfif StructKeyExists(data, "params") AND ArrayLen(data.params)>
-		<h2><span class="item-name">#data.name#</span> <cfif data.type IS "tag">Tag Attribute Reference<cfelseif data.type IS "function">Function Argument Reference</cfif></h2>
+		<h2><cfif data.type IS "tag">Attribute Reference <small>for the <span class="item-name">#data.name#</span> tag</small><cfelseif data.type IS "function">Argument Reference <small>for the <span class="item-name">#data.name#</span> function</small><cfelse><span class="item-name">#data.name#</span></cfif></h2>
 		<table class="table">
 			<thead>
 				<tr>
@@ -117,9 +124,16 @@
 				<cfsavecontent variable="compatibilityData">
 					#compatibilityData#
 					<div class="row">
-						<div class="col-xs-1"><strong><cfif i IS "coldfusion">ColdFusion<cfelseif i IS "railo">Railo<cfelseif i IS "openbd">OpenBD<cfelseif i IS "lucee">Lucee</cfif></strong></div>
-						<div class="col-xs-2"><cfif Len(data.engines[i].minimum_version)><span class="label label-warning">Version #XmlFormat(data.engines[i].minimum_version)#+</span></cfif></div>
-						<div class="col-xs-9">#autoLink(XmlFormat(data.engines[i].notes))#</div>
+					<div class="col-xs-2 text-right">
+						<h4>
+							<cfif i IS "coldfusion">ColdFusion<cfelseif i IS "railo">Railo<cfelseif i IS "openbd">OpenBD<cfelseif i IS "lucee">Lucee</cfif>: 						
+						</h4>
+					</div>
+					<div class="col-xs-8">
+						<div class="alert alert-warning">
+							<cfif Len(data.engines[i].minimum_version)><span class="label label-danger">Version #XmlFormat(data.engines[i].minimum_version)#+</span></cfif>
+							#autoLink(XmlFormat(data.engines[i].notes))#</div>
+						</div>
 					</div>
 				</cfsavecontent>
 			</cfif>
@@ -131,7 +145,7 @@
 	</cfif>
 
 	<cfif StructKeyExists(data, "links") AND ArrayLen(data.links)>
-		<h2>#data.name# Links</h2>
+		<h2>Links <small>more information about #data.name#</small></h2>
 		<ul>
 			<cfloop array="#data.links#" index="link">
 				<li><a href="#link.url#">#link.title#</a><cfif StructKeyExists(link, "description") AND Len(link.description)> - #autoLink(XmlFormat(link.description))#</cfif></li>
@@ -139,7 +153,7 @@
 		</ul>
 	</cfif>
 	<cfif StructKeyExists(data, "examples") AND IsArray(data.examples) AND ArrayLen(data.examples)>
-		<h2 id="examples">#data.name# Examples</h2>
+		<h2 id="examples">Examples <small>sample code <cfif data.type IS "function">invoking<cfelse>using</cfif> the #data.name# <cfif data.type IS "tag">tag<cfelse>function</cfif></small></h2>
         <cfset example_index = 0>
 		<cfloop array="#data.examples#" index="ex">
             <cfset example_index = example_index + 1>
