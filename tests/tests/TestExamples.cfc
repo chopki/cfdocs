@@ -10,7 +10,7 @@ component extends="testbox.system.BaseSpec" {
 					var isItJson = isJSON(json);
 					var fileName = getFileFromPath(filePath);
 					if (isItJson && find("""code""",json) && !listFind("queryexecute.json,entityload.json", fileName)) {
-						json = deserializeJSON(json)
+						json = deserializeJSON(json);
 						if (json.keyExists("examples") && isArray(json.examples) && arrayLen(json.examples)) {
 							for (var e in json.examples) {
 								if (e.keyExists("code") && e.keyExists("result") && Len(e.result)) {
@@ -22,6 +22,14 @@ component extends="testbox.system.BaseSpec" {
 											actualResult = "EXCEPTION: #ex.message#";
 										}
 										
+										//workaround bug: listRemoveDuplicates adds trailing comma in lucee
+										//https://luceeserver.atlassian.net/browse/LDEV-387
+										if (json.name == "listRemoveDuplicates" && server.keyExists("lucee")) {
+											if (right(actualResult, 1) == ",") {
+												e.result = e.result & ",";
+											}
+										}
+
 										expect(actualResult).toBe(e.result, "#fileName# example result is:#e.result# but evaluated to:#actualResult#");
 									}
 								}
